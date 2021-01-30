@@ -1,0 +1,136 @@
+import juego.*
+import personajes.*
+import objetosUtiles.*
+import obstaculos.*
+import armas.*
+import wollok.game.*
+
+
+
+test "Probar atacar con bayoneta"{
+	
+	const bayoneta= new Arma(damage=5,nombre="bayoneta",range=5)
+	
+	const enemigo = new Enemigo (position = game.at(10,5),image = "ingles.png",health = 100)
+	const soldado = new PersonajeAliado (position =game.at(7,5),health = 20, image = "gaucho.png" ,weapon = bayoneta,presentacion = "Amargo y retruco",range = 5)
+	game.addVisual(enemigo)
+	game.addVisual(soldado)
+	
+	
+	selector.aliadoactual(soldado)
+	enemigo.recibirDanio(5)
+	
+	assert.equals(enemigo.health(), 95) 
+
+}
+
+test "Puede atacar por rango"{
+	
+	const bayoneta= new Arma(damage=5,nombre="bayoneta",range=5)
+	
+	const enemigo = new Enemigo (position = game.at(10,5),image = "ingles.png",health = 100)
+	const soldado = new PersonajeAliado (position =game.at(7,5),health = 20, image = "gaucho.png" ,weapon = bayoneta,presentacion = "Amargo y retruco",range = 5)
+	
+	selector.aliadoactual(soldado)
+	
+	
+	assert.that(soldado.puedeAtacarme(enemigo.position()))
+}
+
+test "Tiene definido un alcanze de movimiento"{
+	
+	
+	const bombardero= new PersonajeAliado (position = game.at(5,5),health = 20, image = "./chess-test/torre-negra.png",presentacion="hola",range=5)
+	selector.aliadoactual(bombardero)
+		bombardero.moverse(game.at(1,1))
+		
+		assert.notThat(bombardero.puedoMoverme(selector.position()))	
+
+	}
+	
+test "Si se puede mover dentro de su rango"{
+	
+	
+	const bombardero= new PersonajeAliado (position = game.at(5,5),health = 20, image = "./chess-test/torre-negra.png",presentacion="hola",range=5)
+	selector.aliadoactual(bombardero)
+		bombardero.moverse(game.at(5,7))
+		
+		assert.equals(bombardero.position(),game.at(5,7))	
+
+	}
+	
+
+test "No puede moverse en un obstaculo"{
+	
+	const edificio = new Obstaculo (position = game.at(5,7),image = "edificio.png")
+	game.addVisual(edificio)
+	
+	const bombardero= new PersonajeAliado (position = game.at(5,5),health = 20, image = "./chess-test/torre-negra.png",presentacion="hola",range=5)
+	game.addVisual(bombardero)
+	selector.aliadoactual(bombardero)
+		selector.position(game.at(5,7))
+		edificio.interactuar(bombardero)
+		
+		assert.equals(selector.position(),game.at(5,5))	
+
+	}
+	
+test "Personaje muere cuando recibe daño letal"{
+	
+	const bayoneta= new Arma(damage=100,nombre="bayoneta",range=5)
+	
+	const enemigo = new Enemigo (position = game.at(10,5),image = "ingles.png",health = 100)
+	const soldado = new PersonajeAliado (position =game.at(7,5),health = 20, image = "gaucho.png" ,weapon = bayoneta,presentacion = "Amargo y retruco",range = 5)
+	game.addVisual(enemigo)
+	game.addVisual(soldado)
+	
+	
+	selector.aliadoactual(soldado)
+	enemigo.interactuar(soldado)
+	
+	assert.equals(enemigo.health(), 0)
+	}
+	
+test "Cuanto daño recibe y que daño hacen"{
+	
+	const bayoneta= new Arma(damage=20,nombre="bayoneta",range=5)
+	const canion= new Arma(damage=30,nombre="canion",range=7)
+	const armamento = [bayoneta,canion]
+	
+	const enemigo = new Enemigo (position = game.at(10,5),image = "ingles.png",health = 100)
+	const soldado = new PersonajeAliado (position =game.at(9,5),health = 100, image = "gaucho.png" ,presentacion = "Amargo y retruco",range = 5)
+	game.addVisual(enemigo)
+	game.addVisual(soldado)
+	soldado.armar(armamento)
+	
+	
+	selector.aliadoactual(soldado)
+	soldado.seleccionarArma(0)
+	soldado.atacar(enemigo)
+	enemigo.rutinaDiagonalDerSup2()
+	
+	
+	assert.that(soldado.health() == 80 and enemigo.health() == 80 )
+	}	
+	
+test "Final de turno"{
+	
+	const bayoneta= new Arma(damage=20,nombre="bayoneta",range=5)	
+	const enemigo = new Enemigo (position = game.at(11,5),image = "ingles.png",health = 100)
+	const soldado2 = new PersonajeAliado (position =game.at(9,5),health = 200, image = "gaucho.png" ,weapon = bayoneta,presentacion = "Amargo y retruco",range = 5)
+	const soldado = new PersonajeAliado (position =game.at(10,5),health = 200, image = "gaucho.png" ,weapon = bayoneta,presentacion = "Amargo y retruco",range = 5)
+	
+	
+	game.addVisual(enemigo)
+	game.addVisual(soldado)
+	game.addVisual(soldado2)
+
+	
+	soldado.atacar(enemigo)
+	soldado2.atacar(enemigo)
+	
+
+	
+	turnos.terminarTurno()
+	assert.equals(true,soldado.ataqueDisponible())
+	}		
